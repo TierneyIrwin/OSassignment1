@@ -12,7 +12,7 @@
 using namespace std;
 int main(int argc, char *argv[]){
         char buff[4096];
-        string tmpStr, tmpStrPath,outStrPath,inputDir_str;
+        string tmpStr, tmpStrPath,outStrPath;
         int source, dest;
         DIR *src_dir;
         DIR *dest_dir;
@@ -27,13 +27,13 @@ int main(int argc, char *argv[]){
                 if(res == 0){
                         src_dir = opendir(argv[2]);
                         if(src_dir == NULL){
+				write(STDOUT_FILENO,"Source Directory DNE\n",22);
                                 return -1;
                         }
                 }else{
                         source = open(argv[1],O_RDONLY);
-
                         if(source < 0){
-                                write(STDOUT_FILENO,"error opening source file\n", 27);
+                                write(STDOUT_FILENO,"Error Opening Source File\n", 27);
                                 return -1;
                         }
                 }
@@ -69,13 +69,13 @@ int main(int argc, char *argv[]){
                                         }
                                 }
                         }else{
+				write(STDOUT_FILENO,"Destination Directory DNE\n",27);
                                 return -1;
                         }
 
 
                 }else{
                         dest = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC | O_SYNC,0666);
-
                         if(dest < 0){
                                 error = errno;
                                 close(source);
@@ -120,6 +120,7 @@ int main(int argc, char *argv[]){
                                         return -1;
                                 }
                                 close(source);
+				write(STDOUT_FILENO, "Copy Complete\n",15);
                                 return 0;
                         }
 
