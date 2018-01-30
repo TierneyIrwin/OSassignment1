@@ -10,6 +10,47 @@
 #include <memory>
 #include <sys/stat.h>
 using namespace std;
+void reading(int source, int dest){
+	int info = 1;
+	int error;
+	char buff[4096];
+                        while(info > 0){
+                                char* output = buff;
+                                size_t input;
+                                while(info > 0){
+                                        input = write(dest,output,info);
+                                        if(input >=0){
+                                                info -= input;
+                                                output += input;
+                                        }else if(errno != EINTR){
+                                                error = errno;
+                                                close(source);
+                                                if(dest >= 0){
+                                                        close(dest);
+                                                }
+                                                errno = error;
+                                           
+                                        }
+                                }
+                                info = read(source, buff, sizeof buff);
+                        }
+                        if(info == 0){
+                                if(close(dest) < 0){
+                                        dest = -1;
+                                        error = errno;
+                                        close(source);
+                                        if(dest >=0){
+                                                close(dest);
+                                        }
+                                        errno = error;
+                                        
+                                }
+                                close(source);
+				write(STDOUT_FILENO, "Copy Complete\n",15);
+                                
+                        }
+
+}
 int main(int argc, char *argv[]){
         char buff[4096];
         string tmpStr, tmpStrPath,outStrPath;
@@ -30,7 +71,7 @@ int main(int argc, char *argv[]){
 				write(STDOUT_FILENO,"Source Directory DNE\n",22);
                                 return -1;
                         }
-                }else{
+		}else{
                         source = open(argv[1],O_RDONLY);
                         if(source < 0){
                                 write(STDOUT_FILENO,"Error Opening Source File\n", 27);
@@ -64,10 +105,11 @@ int main(int argc, char *argv[]){
                                                         errno = error;
                                                         return -1;
                                                 }
-                                                goto reading;
+                                                reading(source,dest);
 
                                         }
                                 }
+				return 0;
                         }else{
 				write(STDOUT_FILENO,"Destination Directory DNE\n",27);
                                 return -1;
@@ -85,7 +127,8 @@ int main(int argc, char *argv[]){
                                             errno = error;
                                 return -1;
                         }
-                        goto reading;
+                        reading(source,dest);
+			return 0;
                 }
                 reading:
                         while(info > 0){
@@ -104,7 +147,7 @@ int main(int argc, char *argv[]){
                                                 }
                                                 errno = error;
                                                 return -1;
-                                                                         }
+                                        }
                                 }
                                 info = read(source, buff, sizeof buff);
                         }
